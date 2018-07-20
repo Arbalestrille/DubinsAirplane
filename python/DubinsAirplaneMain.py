@@ -159,8 +159,13 @@ def main():
 def testAllCases():
     #for dubins_case in xrange(1, 16):
     main()
-    print( 'Press any button to continue')
-    input()
+
+    print( 'Press any button to continue' )
+    try:
+        raw_input()
+    except NameError:
+        input()
+        
 
 
 if __name__ == "__main__":
