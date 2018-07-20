@@ -2,13 +2,12 @@
 #       The functions here implement the 3D Dubins Airplane model with totally
 #       16 cases of possible trajectories
 #
-#       Authors: 
+#       Authors:
 #       Kostas Alexis (konstantinos.alexis@mavt.ethz.ch)
 
 from __future__ import division
 import numpy as np
 from math import tan, sin, cos, atan2, fmod, acos, asin, pow, sqrt, fabs,atan
-from ElementaryFunctions import max, min
 
 pi = np.pi
 
@@ -54,7 +53,7 @@ def roty(theta=None):
                     [0,             1,      0],
                     [-sin(theta),   0,      cos(theta)] ])
     return R
-    
+
 
 def rotz(theta=None):
     # Rotation around z
@@ -86,17 +85,17 @@ def computeDubinsLSR(R=None, cls=None, cre=None, anglstart=None, anglend=None):
         flag_zero = 1
     else:
         flag_zero = 0
-    
+
     acos_value = max( acos_value,-1 )
     acos_value = min( acos_value,1 )
     if ell == 0:
         theta2 = 0
     else:
         theta2 = acos( acos_value )
-    
+
     if flag_zero == 1:
         theta2 = 0
-    
+
     if theta2 == 0:
         L = pow(10.0,8)
     else:
@@ -118,7 +117,7 @@ def computeDubinsRSL(R=None, crs=None, cle=None, anglstart=None, anglend=None):
         theta2 = 0
     else:
         theta2 = theta - pi/2 + asin( asin_value )
-    
+
     if theta2 == 0:
         L = pow( 10.0, 8 )
     else:
@@ -130,7 +129,7 @@ def computeOptimalRadius(zs=None, anglstart=None, ze=None, anglend=None, R_min=N
     R1 = R_min
     R2 = 2 * R_min
     R = ( R1 + R2 ) / 2
-    
+
     if idx == 1:
         error = 1
         while fabs( error ) > 0.1:
@@ -167,7 +166,7 @@ def computeOptimalRadius(zs=None, anglstart=None, ze=None, anglend=None, R_min=N
             else:
                 R1 = R
             R = ( R1 + R2 ) / 2
-    elif idx == 4: 
+    elif idx == 4:
         error = 1
         while fabs( error ) > 0.1:
             cls = zs + R * np.dot( rotz( -pi / 2 ), np.array( [cos(anglstart), sin(anglstart), 0] ).T )
@@ -182,7 +181,7 @@ def computeOptimalRadius(zs=None, anglstart=None, ze=None, anglend=None, R_min=N
     return R
 
 
-    
+
 
 def MinTurnRadius_DubinsAirplane(V=None,phi_max=None):
     # Compute Minimum Turning Radius
@@ -196,13 +195,13 @@ def addSpiralBeginning(zs=None, anglstart=None, ze=None, anglend=None, R_min=Non
     cri = np.zeros((3,1))
     zi = np.zeros((3,1))
     anglinter = 0
-    L = 0 
+    L = 0
     ci = np.zeros((3,1))
     psii = 0
     psi1 = 0
     psi2 = 2 * pi
     psi = ( psi1 + psi2 ) / 2
-    
+
     if idx == 1: # RLSR
         crs = zs + R_min * np.dot( rotz( pi/2 ), np.array( [cos(anglstart), sin(anglstart), 0] ).T )
         cre = ze + R_min * np.dot( rotz( pi/2 ), np.array( [cos(anglend), sin(anglend), 0] ).T )
@@ -214,20 +213,20 @@ def addSpiralBeginning(zs=None, anglstart=None, ze=None, anglend=None, R_min=Non
             cli = zi + R_min * np.dot( rotz( -pi/2 ), np.array( [cos(anglinter), sin(anglinter), 0] ).T )
             L = computeDubinsLSR( R_min, cli, cre, anglinter, anglend )
             error = ( L + fabs( psi ) * R_min ) - fabs( hdist / tan( gamma_max ) )
-            
+
             if error > 0:
                 psi2 = (179*psi2+psi)/180
             else:
                 psi1 = (179*psi1+psi)/180
-            
+
             psi = ( psi1 + psi2 ) / 2
-        
+
         zi = crs + np.dot( rotz( psi ), ( zs-crs ) )
         anglinter = anglstart + psi
         L = L + fabs( psi ) * R_min
         ci = cli
         psii = psi
-    
+
     elif idx == 2: # RLSL
         crs = zs + R_min * np.dot( rotz( pi / 2 ), np.array( [cos(anglstart), sin(anglstart), 0] ).T )
         cle = ze + R_min * np.dot( rotz( -pi / 2 ), np.array( [cos(anglend), sin(anglend), 0] ).T )
@@ -239,46 +238,46 @@ def addSpiralBeginning(zs=None, anglstart=None, ze=None, anglend=None, R_min=Non
             cli = zi + R_min * np.dot( rotz( -pi / 2 ), np.array( [cos(anglinter), sin(anglinter), 0] ).T )
             L = computeDubinsLSL( R_min, cli, cle, anglinter, anglend )
             error = ( L + fabs( psi ) * R_min ) - fabs( hdist / tan( gamma_max ) )
-            
+
             if error > 0:
                 psi2 = (179*psi2+psi)/180
             else:
                 psi1 = (179*psi1+psi)/180
-            
+
             psi = ( psi1 + psi2 ) / 2
-        
+
         zi   = crs + np.dot( rotz( psi ), ( zs-crs ) )
         anglinter = anglstart + psi
         L = L + fabs( psi ) * R_min
         ci = cli
         psii = psi
-    
+
     elif idx == 3: # LRSR
         cls = zs + R_min * np.dot( rotz( -pi/2 ), np.array( [cos(anglstart), sin(anglstart), 0] ).T )
         cre = ze + R_min * np.dot( rotz( pi/2 ), np.array( [cos(anglend), sin(anglend), 0] ).T )
         L = computeDubinsLSR( R_min, cls, cre, anglstart, anglend )
         error = L - fabs( hdist / tan( gamma_max ) )
-        
+
         while fabs( error ) > 0.001:
             zi = cls + np.dot( rotz( -psi ), ( zs-cls ) )
             anglinter = anglstart - psi
             cri = zi + R_min * np.dot( rotz( pi / 2 ), np.array( [cos(anglinter), sin(anglinter), 0] ).T )
             L = computeDubinsRSR( R_min, cri, cre, anglinter, anglend )
             error = ( L + fabs( psi ) * R_min ) - fabs( hdist / tan( gamma_max ) )
-            
+
             if error > 0:
                 psi2 = (179*psi2+psi)/180
             else:
                 psi1 = (179*psi1+psi)/180
-            
+
             psi = ( psi1 + psi2 ) / 2
-        
+
         zi   = cls + np.dot( rotz( -psi ), ( zs-cls ) )
         anglinter = anglstart - psi
         L = L + fabs( psi ) * R_min
         ci = cri
         psii = psi
-    
+
     elif idx == 4: # LRSL
         cls = zs + R_min * np.dot( rotz( -pi/2 ), np.array( [cos(anglstart), sin(anglstart), 0] ).T )
         cle = ze + R_min * np.dot( rotz( -pi/2 ), np.array( [cos(anglend), sin(anglend), 0] ).T )
@@ -286,7 +285,7 @@ def addSpiralBeginning(zs=None, anglstart=None, ze=None, anglend=None, R_min=Non
         # origin is "cre = ze + R_min * np.dot( rotz( -pi/2 ), np.array( [cos(anglend), sin(anglend), 0] ).T )"
         L = computeDubinsLSL( R_min, cls, cle, anglstart, anglend )
         error = L - fabs( hdist / tan( gamma_max ) )
-        
+
         while fabs( error ) > 0.001:
             zi = cls + np.dot( rotz( -psi ), ( zs-cls ) )
             anglinter = anglstart - psi
@@ -295,20 +294,20 @@ def addSpiralBeginning(zs=None, anglstart=None, ze=None, anglend=None, R_min=Non
             # origin is "cri = zi + R_min * np.array( rotz( pi / 2 ), np.array( [cos(anglinter), sin(anglinter), 0 ] ).T )"
             L = computeDubinsRSL( R_min, cri, cle, anglinter, anglend )
             error = ( L + fabs( psi ) * R_min ) - fabs( hdist / tan( gamma_max) )
-            
+
             if error > 0:
                 psi2 = (179*psi2+psi)/180
             else:
                 psi1 = (179*psi1+psi)/180
-            
+
             psi = ( psi1 + psi2 ) / 2
-        
+
         zi   = cls + np.dot( rotz( -psi ), ( zs-cls ) )
         anglinter = anglstart - psi
         L = L + fabs( psi ) * R_min
         ci = cri
         psii = psi
-    
+
     return zi, anglinter, L, ci, psii
 
 
@@ -324,175 +323,175 @@ def addSpiralEnd(zs=None, anglstart=None, ze=None, anglend=None, R_min=None, gam
     psi1 = 0
     psi2 = 2 * pi
     psi = ( psi1 + psi2 ) / 2
-    
+
     if idx == 1: # RSLR
         crs = zs + R_min * np.dot( rotz( pi / 2 ), np.array( [cos(anglstart), sin(anglstart), 0] ).T )
         cre = ze + R_min * np.dot( rotz( pi/2 ), np.array( [cos(anglend), sin(anglend), 0] ).T )
         L = computeDubinsRSR( R_min, crs, cre, anglstart, anglend )
         error = L - fabs( hdist / tan( gamma_max ) )
-        
+
         while fabs( error ) > 0.001:
             zi = cre + np.dot( rotz( -psi ), ( ze-cre ) )
             anglinter = anglend - psi
             cli = zi + R_min * np.dot( rotz( -pi / 2 ), np.array( [cos(anglinter), sin(anglinter), 0] ).T )
             L = computeDubinsRSL( R_min, crs, cli, anglstart, anglinter )
             error = ( L + fabs( psi ) * R_min ) - fabs( hdist / tan( gamma_max ) )
-            
+
             if error > 0:
                 psi2 = (179*psi2+psi)/180
             else:
                 psi1 = (179*psi1+psi)/180
-            
+
             psi = ( psi1 + psi2 ) / 2
-        
+
         zi   = cre + np.dot( rotz( -psi ), ( ze-cre ) )
         anglinter = anglend - psi
         L = L + abs( psi ) * R_min
         ci = cli
         psii = psi
-    
+
     elif idx == 2: # RSRL
         crs = zs + R_min * np.dot( rotz( pi / 2 ), np.array( [cos(anglstart), sin(anglstart), 0] ).T )
         cle = ze + R_min * np.dot( rotz( -pi/2 ), np.array( [cos(anglend), sin(anglend), 0] ).T )
         L = computeDubinsRSL( R_min, crs, cle, anglstart, anglend )
         error = L - fabs( hdist / tan( gamma_max ) )
-        
+
         while fabs( error ) > 0.001:
             zi = cle + np.dot( rotz( psi ), ( ze-cle ) )
             anglinter = anglend + psi
             cri = zi + R_min * np.dot( rotz( pi / 2 ), np.array( [cos(anglinter), sin(anglinter), 0] ).T )
             L = computeDubinsRSR( R_min, crs, cri, anglstart, anglinter )
             error = ( L + fabs( psi ) * R_min ) - fabs( hdist / tan( gamma_max ) )
-            
+
             if error > 0:
                 psi2 = (179*psi2+psi)/180
             else:
                 psi1 = (179*psi1+psi)/180
-            
+
             psi = ( psi1 + psi2 ) / 2
-        
+
         zi = cle + np.dot( rotz( psi ), ( ze-cle ) )
         anglinter = anglend + psi
         cri  = zi + R_min * np.dot( rotz( pi / 2 ), np.array( [cos(anglinter), sin(anglinter), 0] ).T )
         L = L + fabs( psi ) * R_min
         ci = cri
         psii = psi
-    
+
     elif idx == 3: # LSLR
         cls = zs + R_min * np.dot( rotz( -pi / 2 ), np.array( [cos(anglstart), sin(anglstart), 0] ).T )
         cre = ze + R_min * np.dot( rotz( pi / 2 ), np.array( [cos(anglend), sin(anglend), 0] ).T )
         L = computeDubinsLSR( R_min, cls, cre, anglstart, anglend )
         error = L - fabs( hdist / tan( gamma_max ))
-        
+
         while fabs( error ) > 0.001:
             zi = cre + np.dot( rotz( -psi ), ( ze-cre ) )
             anglinter = anglend - psi
             cli = zi + R_min * np.dot( rotz( -pi / 2 ), np.array( [cos(anglinter), sin(anglinter), 0] ).T )
             L = computeDubinsLSL( R_min, cls, cli, anglstart, anglinter )
             error = ( L + fabs( psi ) * R_min ) - fabs( hdist / tan( gamma_max ) )
-            
+
             if error > 0:
                 psi2 = (179*psi2+psi)/180
             else:
                 psi1 = (179*psi1+psi)/180
-            
+
             psi = ( psi1 + psi2 ) / 2
-        
+
         zi   = cre + np.dot( rotz( -psi ), ( ze-cre ) )
         anglinter = anglend - psi
         L = L + fabs( psi ) * R_min
         ci = cli
         psii = psi
-    
+
     elif idx == 4:
-        
+
         cls = zs + R_min * np.dot( rotz( -pi/2 ), np.array( [cos(anglstart), sin(anglstart), 0] ).T )
         cle = ze + R_min * np.dot( rotz( -pi/2 ), np.array( [cos(anglend), sin(anglend), 0] ).T )
         L = computeDubinsLSL( R_min, cls, cle, anglstart, anglend )
         error = L - fabs( hdist / tan( gamma_max ) )
-        
-        while fabs( error ) > 0.001: 
+
+        while fabs( error ) > 0.001:
             zi = cle + np.dot( rotz( psi ), ( ze-cle ) )
             anglinter = anglend + psi
             cri = zi + R_min * np.dot( rotz( pi / 2 ), np.array( [cos(anglinter), sin(anglinter), 0] ).T )
             L = computeDubinsLSR( R_min, cls, cri, anglstart, anglinter )
             error = ( L + fabs( psi ) * R_min ) - fabs( hdist / tan( gamma_max ) )
-            
+
             if error > 0:
                 psi2 = (179*psi2+psi)/180
             else:
                 psi1 = (179*psi1+psi)/180
-            
+
             psi = ( psi1 + psi2 ) / 2
-        
+
         zi = cle + np.dot( rotz( psi ), ( ze-cle ))
         anglinter = anglend + psi
         L = L + fabs( psi ) * R_min
         ci = cri
         psii = psi
-    
+
     return zi, anglinter, L, ci, psii
-            
-            
+
+
 
 def DubinsAirplanePath(init_conf=None, final_conf=None, R_min=None, gamma_max=None):
     # Compute the Dubins Airplane path
- 
+
     zs = (init_conf[0:3]).T
     anglstart = init_conf[3]
     ze = (final_conf[0:3]).T
     anglend = final_conf[3]
-    
+
     DubinsAirplaneSolution['p_s'] = zs
     DubinsAirplaneSolution['angl_s'] = anglstart
     DubinsAirplaneSolution['p_e'] = ze
     DubinsAirplaneSolution['angl_e'] = anglend
-    
+
     crs = zs + R_min*np.dot(rotz(pi/2), np.array([cos(anglstart), sin(anglstart), 0]).T)
     cls = zs + R_min*np.dot(rotz(-pi/2),np.array([cos(anglstart), sin(anglstart), 0]).T)
     cre = ze + R_min*np.dot(rotz(pi/2),np.array([cos(anglend), sin(anglend), 0]).T)
     cle = ze + R_min*np.dot(rotz(-pi/2),np.array([cos(anglend), sin(anglend), 0]).T)
-    
+
     # compute L1, L2, L3, L4
     L1 = computeDubinsRSR(R_min, crs, cre, anglstart, anglend)
     L2 = computeDubinsRSL(R_min, crs, cle, anglstart, anglend)
     L3 = computeDubinsLSR(R_min, cls, cre, anglstart, anglend)
     L4 = computeDubinsLSL(R_min, cls, cle, anglstart, anglend)
-    
+
     # L is the minimum distance
     L = np.amin(np.array([L1, L2, L3, L4]))
     idx = np.where(np.array([L1,L2,L3,L4])==L)[0][0] + 1
-    
+
     hdist = -(ze[2] - zs[2])
     if fabs(hdist) <= L*tan(gamma_max):
         gam = atan(hdist/L)
-        DubinsAirplaneSolution['case'] = 1 
+        DubinsAirplaneSolution['case'] = 1
         DubinsAirplaneSolution['R'] = R_min
         DubinsAirplaneSolution['gamma'] = gam
         DubinsAirplaneSolution['L'] = L/cos(gam)
         DubinsAirplaneSolution['k_s'] = 0
         DubinsAirplaneSolution['k_e'] = 0
     elif fabs(hdist) >= (L+2*pi*R_min)*tan(gamma_max):
-        
+
         k = np.floor( (fabs(hdist)/tan(gamma_max) - L)/(2*pi*R_min))
-        
+
         if hdist >= 0:
-            
+
             DubinsAirplaneSolution['k_s'] = k
             DubinsAirplaneSolution['k_e'] = 0
         else:
             DubinsAirplaneSolution['k_s'] = 0
             DubinsAirplaneSolution['k_e'] = k
-        
+
         # find optimal turning radius
         R = computeOptimalRadius(zs, anglstart, ze, anglend, R_min, gamma_max, idx, k, hdist)
-        
+
         # recompute the centers of spirals and Dubins path length with new R
         crs = zs + R*np.dot(rotz(pi/2), np.array( [cos(anglstart), sin(anglstart), 0] ).T )
         cls = zs + R*np.dot(rotz(-pi/2), np.array( [cos(anglstart), sin(anglstart), 0] ).T )
         cre = ze + R*np.dot(rotz(pi/2), np.array( [cos(anglend), sin(anglend), 0] ).T )
         cle = ze + R*np.dot(rotz(-pi/2), np.array( [cos(anglend), sin(anglend), 0] ).T )
-        
+
         if idx == 1:
             L = computeDubinsRSR( R, crs, cre, anglstart, anglend )
         elif idx == 2:
@@ -501,38 +500,38 @@ def DubinsAirplanePath(init_conf=None, final_conf=None, R_min=None, gamma_max=No
             L = computeDubinsLSR( R, cls, cre, anglstart, anglend )
         elif idx == 4:
             L = computeDubinsLSL( R, cls, cle, anglstart, anglend )
-        
+
         DubinsAirplaneSolution['case'] = 1
         DubinsAirplaneSolution['R'] = R
         gam = np.sign( hdist ) * gamma_max
         DubinsAirplaneSolution['gamma'] = gam
         DubinsAirplaneSolution['L'] = ( L + 2 * pi * k * R ) / cos( gamma_max )
-        
+
     else:
-        
+
         gam = np.sign( hdist ) * gamma_max
-        
+
         if hdist > 0:
             zi, chii, L, ci, psii = addSpiralBeginning( zs, anglstart, ze, anglend, R_min, gam, idx, hdist )
-            DubinsAirplaneSolution['case'] = 2 
+            DubinsAirplaneSolution['case'] = 2
         else:
             zi, chii, L, ci, psii = addSpiralEnd( zs, anglstart, ze, anglend, R_min, gam, idx, hdist )
             DubinsAirplaneSolution['case'] = 3
-        
+
         DubinsAirplaneSolution['R'] = R_min
         DubinsAirplaneSolution['gamma'] = gam
-        DubinsAirplaneSolution['L'] = L / cos( gamma_max ) 
-    
+        DubinsAirplaneSolution['L'] = L / cos( gamma_max )
+
     e1 = np.array( [1, 0, 0] ).T
     R = DubinsAirplaneSolution['R']
 
     if np.isscalar(DubinsAirplaneSolution['case']):
         pass
     else:
-        print '### Error'
-        
-    
-        
+        print( '### Error' )
+
+
+
     if DubinsAirplaneSolution['case'] == 1: # spiral-line-spiral
         if idx == 1: # right-straight-right
             theta = atan2( cre[1]-crs[1], cre[0]-crs[0])
@@ -541,7 +540,7 @@ def DubinsAirplanePath(init_conf=None, final_conf=None, R_min=None, gamma_max=No
             w1 = crs + DubinsAirplaneSolution['R']*np.dot(rotz(theta-pi/2),e1.T).T + np.array([0,0,-dist1*tan(gam)]).T
             w2 = cre + DubinsAirplaneSolution['R']*np.dot(rotz(theta-pi/2),e1.T).T - np.array([0,0,-dist2*tan(gam)]).T
             q1 = (w2-w1)/np.linalg.norm(w2-w1,ord=2) # direction of line
-            
+
             DubinsAirplaneSolution['c_s']   = crs
             DubinsAirplaneSolution['psi_s'] = anglstart-pi/2
             DubinsAirplaneSolution['lamda_s'] = 1
@@ -593,7 +592,7 @@ def DubinsAirplanePath(init_conf=None, final_conf=None, R_min=None, gamma_max=No
             w1 = cls + R*np.dot(rotz(theta+theta2),e1.T).T + np.array([0, 0, -dist1*tan(gam)]).T
             w2 = cre + R*np.dot(rotz(-pi+theta+theta2),e1.T).T - np.array([0, 0, -dist2*tan(gam)]).T
             q1 = (w2-w1)/np.linalg.norm(w2-w1,ord=2)
-            
+
             # start spiral
             DubinsAirplaneSolution['c_s']   = cls
             DubinsAirplaneSolution['psi_s'] = anglstart+pi/2
@@ -618,7 +617,7 @@ def DubinsAirplanePath(init_conf=None, final_conf=None, R_min=None, gamma_max=No
             w1 = cls + DubinsAirplaneSolution['R']*np.dot(rotz(theta+pi/2),e1.T).T + np.array([0,0,-dist1*tan(gam)]).T
             w2 = cle + DubinsAirplaneSolution['R']*np.dot(rotz(theta+pi/2),e1.T).T - np.array([0,0,-dist2*tan(gam)]).T
             q1 = (w2-w1)/np.linalg.norm(w2-w1,ord=2)
-            
+
             # start spiral
             DubinsAirplaneSolution['c_s']   = cls
             DubinsAirplaneSolution['psi_s'] = anglstart+pi/2
@@ -638,7 +637,7 @@ def DubinsAirplanePath(init_conf=None, final_conf=None, R_min=None, gamma_max=No
             DubinsAirplaneSolution['q_e']   = np.dot(rotz(anglend), np.array([1,0,0]).T)
     elif DubinsAirplaneSolution['case'] == 2:
         if idx == 1: # right-left-straight-right
-            # start spiral 
+            # start spiral
             DubinsAirplaneSolution['c_s'] = crs
             DubinsAirplaneSolution['psi_s'] = anglstart-pi/2
             DubinsAirplaneSolution['lamda_s'] = 1
@@ -673,7 +672,7 @@ def DubinsAirplanePath(init_conf=None, final_conf=None, R_min=None, gamma_max=No
             # hyperplane H_e: end of Dubins path
             DubinsAirplaneSolution['w_e']   = ze
             DubinsAirplaneSolution['q_e']   = np.dot(rotz(anglend), np.array([1,0,0]).T)
-            
+
         elif idx == 2: # right-left-straight-left
             theta = atan2(cle[1]-ci[1],cle[0]-ci[0])
             dist1 = R*fmod(2*pi-fmod(theta+pi/2,2*pi)+fmod(chii+pi/2,2*pi),2*pi)
@@ -682,7 +681,7 @@ def DubinsAirplanePath(init_conf=None, final_conf=None, R_min=None, gamma_max=No
             w1 = ci + DubinsAirplaneSolution['R']*np.dot(rotz(theta+pi/2),e1.T).T + np.array([0, 0, -(dist1+dist2)*tan(gam)]).T
             w2 = cle + DubinsAirplaneSolution['R']*np.dot(rotz(theta+pi/2),e1.T).T - np.array([0,0,-dist3*tan(gam)]).T
             q1 = (w2-w1)/np.linalg.norm(w2-w1,ord=2) # direction of line
-            
+
             # start spiral
             DubinsAirplaneSolution['c_s']   = crs
             DubinsAirplaneSolution['psi_s'] = anglstart-pi/2
@@ -710,7 +709,7 @@ def DubinsAirplanePath(init_conf=None, final_conf=None, R_min=None, gamma_max=No
             # hyperplane H_e: end of Dubins path
             DubinsAirplaneSolution['w_e'] = ze
             DubinsAirplaneSolution['q_e'] = np.dot(rotz(anglend), np.array([1, 0, 0]).T)
-            
+
         elif idx == 3: # left-right-straight-right
             theta = atan2(cre[1]-ci[1], cre[0] - ci[0])
             dist1 = R*fmod(2*pi+fmod(theta-pi/2,2*pi)-fmod(chii-pi/2,2*pi),2*pi)
@@ -746,7 +745,7 @@ def DubinsAirplanePath(init_conf=None, final_conf=None, R_min=None, gamma_max=No
             # hyperplane H_e: end of Dubins path
             DubinsAirplaneSolution['w_e'] = ze
             DubinsAirplaneSolution['q_e'] = np.dot(rotz(anglend), np.array([1,0,0]).T)
-            
+
         elif idx == 4: # left-right-straight-left
             ell = np.linalg.norm(cle[0:2]-ci[0:2],ord=2)
             theta = atan2(cle[1] - ci[1], cle[0] - ci[0])
@@ -757,7 +756,7 @@ def DubinsAirplanePath(init_conf=None, final_conf=None, R_min=None, gamma_max=No
             w1 = ci + R*np.dot(rotz(theta2),e1.T).T + np.array([0, 0, -(dist1+dist2)*tan(gam)]).T
             w2 = cle + R*np.dot(rotz(theta2+pi),e1.T).T - np.array([0, 0, -dist3*tan(gam)]).T
             q1 = (w2-w1)/np.linalg.norm(w2-w1,ord=2)
-            
+
             # start spiral
             DubinsAirplaneSolution['c_s'] = cls
             DubinsAirplaneSolution['psi_s'] = anglstart+pi/2
@@ -785,8 +784,8 @@ def DubinsAirplanePath(init_conf=None, final_conf=None, R_min=None, gamma_max=No
             # hyperplane H_e: end of Dubins path
             DubinsAirplaneSolution['w_e'] = ze
             DubinsAirplaneSolution['q_e'] = np.dot(rotz(anglend), np.array([1, 0, 0]).T)
-            
-    elif DubinsAirplaneSolution['case'] == 3: 
+
+    elif DubinsAirplaneSolution['case'] == 3:
         if idx == 1: # right-straight-left-right
             # path specific calculations
             ell = np.linalg.norm(ci[0:2] - crs[0:2],ord=2)
@@ -826,7 +825,7 @@ def DubinsAirplanePath(init_conf=None, final_conf=None, R_min=None, gamma_max=No
             # hyperplane H_e: end of Dubins path
             DubinsAirplaneSolution['w_e'] = ze
             DubinsAirplaneSolution['q_e'] = np.dot(rotz(anglend),np.array([1,0,0]).T)
-                
+
         elif idx == 2: # right-straight-right-left
             # path specific calculations
             theta = atan2(ci[1] - crs[1], ci[0] - crs[0])
@@ -873,7 +872,7 @@ def DubinsAirplanePath(init_conf=None, final_conf=None, R_min=None, gamma_max=No
             w1 = cls + DubinsAirplaneSolution['R']*np.dot(rotz(theta+pi/2),e1.T).T + np.array([0, 0, -dist1*tan(gam)]).T
             w2 = ci + DubinsAirplaneSolution['R']*np.dot(rotz(theta+pi/2),e1.T).T - np.array([0, 0, -(dist2+dist3)*tan(gam)]).T
             q1 = (w2-w1)/np.linalg.norm(w2-w1,ord=2) # direction of line
-            
+
             # start spiral
             DubinsAirplaneSolution['c_s'] = cls
             DubinsAirplaneSolution['psi_s'] = anglstart+pi/2
@@ -902,9 +901,9 @@ def DubinsAirplanePath(init_conf=None, final_conf=None, R_min=None, gamma_max=No
             # hyperplane H_e: end of Dubins path
             DubinsAirplaneSolution['w_e'] = ze
             DubinsAirplaneSolution['q_e'] = np.dot(rotz(anglend),np.array([1,0,0]).T)
-            
+
         elif idx == 4: # left-straight-right-left
-            
+
             # path specific calculations
             ell = np.linalg.norm(ci[0:2] - cls[0:2],ord=2)
             theta = atan2( ci[1] - cls[1], ci[0] - cls[0])
@@ -915,7 +914,7 @@ def DubinsAirplanePath(init_conf=None, final_conf=None, R_min=None, gamma_max=No
             w1 = cls + R*np.dot(rotz(theta+theta2),e1.T).T + np.array([0, 0, -dist1*tan(gam)]).T
             w2 = ci + R*np.dot(rotz(-pi+theta+theta2),e1.T).T - np.array([0, 0, -(dist2+dist3)*tan(gam)]).T
             q1 = (w2-w1)/np.linalg.norm(w2-w1,ord=2)
-            
+
             # start spiral
             DubinsAirplaneSolution['c_s'] = cls
             DubinsAirplaneSolution['psi_s'] = anglstart+pi/2
@@ -944,10 +943,10 @@ def DubinsAirplanePath(init_conf=None, final_conf=None, R_min=None, gamma_max=No
             # hyperplane H_e: end of Dubins path
             DubinsAirplaneSolution['w_e'] = ze
             DubinsAirplaneSolution['q_e'] = np.dot(rotz(anglend), np.array([1, 0, 0]).T)
-    
-    if DubinsAirplaneSolution['case'] == 4: 
-        print '### Not Implemented Case'
-    
+
+    if DubinsAirplaneSolution['case'] == 4:
+        print( '### Not Implemented Case')
+
     return DubinsAirplaneSolution
 
 def drawline(w1=None, q1=None, w2=None, q2=None, step=None):
@@ -955,7 +954,7 @@ def drawline(w1=None, q1=None, w2=None, q2=None, step=None):
     r = w1
     # propagate line until cross half plane
     s = 0
-    
+
     NrNc = r.shape
     if len(NrNc) == 1:
         NrNc_ind = NrNc[0]
@@ -963,8 +962,8 @@ def drawline(w1=None, q1=None, w2=None, q2=None, step=None):
     else:
         NrNc_ind = NrNc[1]
         last_col = r[:,NrNc[1]-1]
-    
-    r.shape = (3,1)    
+
+    r.shape = (3,1)
     while np.dot( (last_col - w2).T,q2 ) <= 0:
         s = s + step
         w1.shape = (3,1)
@@ -979,16 +978,16 @@ def drawline(w1=None, q1=None, w2=None, q2=None, step=None):
         else:
             NrNc_ind = NrNc[1]
             last_col = r[:,NrNc[1]-1]
-    
+
     return r
 
 def drawspiral(R=None, gam=None, c=None, psi=None, lam=None, k=None, w=None, q=None, step=None):
     # extract spiral path
-    r = np.zeros((1,1))  
+    r = np.zeros((1,1))
     r = c.T + R*np.array( [cos(psi), sin(psi), 0] ).T
     r = r.T
     # determine number of required crossings of half plane
-    NrNc = r.shape  
+    NrNc = r.shape
     if len(NrNc) ==1 :
         NrNc_ind = NrNc[0]
         halfplane = np.dot( (r[0:2]-w[0:2].T),q[0:2] )
@@ -996,22 +995,22 @@ def drawspiral(R=None, gam=None, c=None, psi=None, lam=None, k=None, w=None, q=N
         NrNc_ind = NrNc[1]
         halfplane = np.dot( (r[0:2,NrNc_ind-1]-w[0:2].T),q[0:2] )
 
-    
+
     if (halfplane > 0).all() :
         required_crossing = 2 * ( k + 1 )
     else:
         required_crossing = 2 * k + 1
-    
+
     # propagate spiral until cross half plane the right number of times
     s = 0
     r.shape = (3,1)
     while ( required_crossing > 0 ) or ( (halfplane <= 0).all() ):
         s = s +step
-        new_col = (c + R * np.array( [ cos(lam*s+psi), sin(lam*s+psi), -s*tan(gam)] ).T ) 
+        new_col = (c + R * np.array( [ cos(lam*s+psi), sin(lam*s+psi), -s*tan(gam)] ).T )
         new_col.shape = (3,1)
         r = np.hstack( (r, new_col) )
 
-        NrNc = r.shape  
+        NrNc = r.shape
         if len(NrNc)==1 :
             NrNc_ind = NrNc[0]
             if np.sign( halfplane ) != np.sign( np.dot((r[0:2]-w[0:2].T),q[0:2]) ):
@@ -1026,13 +1025,13 @@ def drawspiral(R=None, gam=None, c=None, psi=None, lam=None, k=None, w=None, q=N
 
 def ExtractDubinsAirplanePath(DubinsAirplaneSolutions=None):
     # Extract the Dubins Airplane Solution in vector form
-    
+
     step = 0.01
-    
+
     if DubinsAirplaneSolutions['case'] == 1: # spiral - line - spiral
         r1 = drawspiral(DubinsAirplaneSolutions['R'],DubinsAirplaneSolutions['gamma'], DubinsAirplaneSolutions['c_s'], DubinsAirplaneSolutions['psi_s'], DubinsAirplaneSolutions['lamda_s'], DubinsAirplaneSolutions['k_s'], DubinsAirplaneSolutions['w_s'], DubinsAirplaneSolutions['q_s'],step)
         r2 = drawline(DubinsAirplaneSolutions['w_s'], DubinsAirplaneSolutions['q_s'], DubinsAirplaneSolutions['w_l'], DubinsAirplaneSolutions['q_l'], step)
-        r3 = drawspiral(DubinsAirplaneSolutions['R'], DubinsAirplaneSolutions['gamma'], DubinsAirplaneSolutions['c_e'], DubinsAirplaneSolutions['psi_e'], DubinsAirplaneSolutions['lamda_e'], DubinsAirplaneSolutions['k_e'], DubinsAirplaneSolutions['w_e'], DubinsAirplaneSolutions['q_e'], step) 
+        r3 = drawspiral(DubinsAirplaneSolutions['R'], DubinsAirplaneSolutions['gamma'], DubinsAirplaneSolutions['c_e'], DubinsAirplaneSolutions['psi_e'], DubinsAirplaneSolutions['lamda_e'], DubinsAirplaneSolutions['k_e'], DubinsAirplaneSolutions['w_e'], DubinsAirplaneSolutions['q_e'], step)
         path = r1
         r = np.hstack((r1,r2))
         r = np.hstack((r,r3))
@@ -1045,7 +1044,7 @@ def ExtractDubinsAirplanePath(DubinsAirplaneSolutions=None):
         r = np.hstack((r1,r2))
         r = np.hstack((r,r3))
         r = np.hstack((r,r4))
-        
+
     elif DubinsAirplaneSolutions['case'] == 3: # spiral - line - spiral - spiral
         r1 = drawspiral(DubinsAirplaneSolutions['R'],DubinsAirplaneSolutions['gamma'],DubinsAirplaneSolutions['c_s'],DubinsAirplaneSolutions['psi_s'],DubinsAirplaneSolutions['lamda_s'],DubinsAirplaneSolutions['k_s'],DubinsAirplaneSolutions['w_s'],DubinsAirplaneSolutions['q_s'],step)
         r2 = drawline(DubinsAirplaneSolutions['w_s'],DubinsAirplaneSolutions['q_s'],DubinsAirplaneSolutions['w_l'],DubinsAirplaneSolutions['q_l'],step)
@@ -1055,45 +1054,38 @@ def ExtractDubinsAirplanePath(DubinsAirplaneSolutions=None):
         r = np.hstack((r1,r2))
         r = np.hstack((r,r3))
         r = np.hstack((r,r4))
-    
+
     return r
 
 def PrintSolutionAgainstMATLAB(DubinsAirplaneSolution=None):
-    print 'DubinsAirplaneSolution = '
-    print '\n'
-    print 'case:\t\t ' + str(DubinsAirplaneSolution['case'])
-    print 'p_s:\t\t' + str(DubinsAirplaneSolution['p_s']) + '\n'
-    print 'angl_s:\t\t' + str(DubinsAirplaneSolution['angl_s']) + '\n'
-    print 'p_e:\t\t' + str(DubinsAirplaneSolution['p_e']) + '\n'
-    print 'R:\t\t' + str(DubinsAirplaneSolution['R']) 
-    print 'gamma:\t\t' + str(DubinsAirplaneSolution['gamma']) 
-    print 'L:\t\t' + str(DubinsAirplaneSolution['L']) 
-    print 'c_s:\t\t' + str(DubinsAirplaneSolution['c_s']) + '\n'
-    print 'psi_s:\t\t' + str(DubinsAirplaneSolution['psi_s']) + '\n'
-    print 'lamda_s:\t\t' + str(DubinsAirplaneSolution['lamda_s']) 
-    print 'lamda_si:\t\t' + str(DubinsAirplaneSolution['lamda_si']) 
-    print 'k_s:\t\t' + str(DubinsAirplaneSolution['k_s']) 
-    print 'c_ei:\t\t' + str(DubinsAirplaneSolution['c_ei'].T) + '\n'
-    print 'c_si:\t\t' + str(DubinsAirplaneSolution['c_si'].T) + '\n'
-    print 'psi_ei:\t\t' + str(DubinsAirplaneSolution['psi_ei']) 
-    print 'lamda_e:\t\t' + str(DubinsAirplaneSolution['lamda_e']) 
-    print 'k_e:\t\t' + str(DubinsAirplaneSolution['k_e']) 
-    print 'w_s:\t\t' + str(DubinsAirplaneSolution['w_s']) + '\n'
-    print 'q_s:\t\t' + str(DubinsAirplaneSolution['q_s']) + '\n'
-    print 'w_si:\t\t' + str(DubinsAirplaneSolution['w_si'].T) + '\n'
-    print 'q_si:\t\t' + str(DubinsAirplaneSolution['q_si'].T) + '\n'
-    print 'w_l:\t\t' + str(DubinsAirplaneSolution['w_l']) + '\n'
-    print 'q_l:\t\t' + str(DubinsAirplaneSolution['q_l']) + '\n'
-    print 'w_ei:\t\t' + str(DubinsAirplaneSolution['w_ei'].T) + '\n'
-    print 'q_ei:\t\t' + str(DubinsAirplaneSolution['q_ei'].T) + '\n'
-    print 'w_e:\t\t' + str(DubinsAirplaneSolution['w_e']) + '\n'
-    print 'q_e:\t\t' + str(DubinsAirplaneSolution['q_e']) + '\n'
-    print 'angl_e:\t\t' + str(DubinsAirplaneSolution['angl_e']) + '\n'
+    print( 'DubinsAirplaneSolution = ')
+    print( '\n')
+    print( 'case:\t\t ' + str(DubinsAirplaneSolution['case']))
+    print( 'p_s:\t\t' + str(DubinsAirplaneSolution['p_s']) + '\n')
+    print( 'angl_s:\t\t' + str(DubinsAirplaneSolution['angl_s']) + '\n')
+    print( 'p_e:\t\t' + str(DubinsAirplaneSolution['p_e']) + '\n')
+    print( 'R:\t\t' + str(DubinsAirplaneSolution['R']) )
+    print( 'gamma:\t\t' + str(DubinsAirplaneSolution['gamma']) )
+    print( 'L:\t\t' + str(DubinsAirplaneSolution['L']) )
+    print( 'c_s:\t\t' + str(DubinsAirplaneSolution['c_s']) + '\n')
+    print( 'psi_s:\t\t' + str(DubinsAirplaneSolution['psi_s']) + '\n')
+    print( 'lamda_s:\t\t' + str(DubinsAirplaneSolution['lamda_s']) )
+    print( 'lamda_si:\t\t' + str(DubinsAirplaneSolution['lamda_si']) )
+    print( 'k_s:\t\t' + str(DubinsAirplaneSolution['k_s']) )
+    print( 'c_ei:\t\t' + str(DubinsAirplaneSolution['c_ei'].T) + '\n')
+    print( 'c_si:\t\t' + str(DubinsAirplaneSolution['c_si'].T) + '\n')
+    print( 'psi_ei:\t\t' + str(DubinsAirplaneSolution['psi_ei']) )
+    print( 'lamda_e:\t\t' + str(DubinsAirplaneSolution['lamda_e']) )
+    print( 'k_e:\t\t' + str(DubinsAirplaneSolution['k_e']) )
+    print( 'w_s:\t\t' + str(DubinsAirplaneSolution['w_s']) + '\n')
+    print( 'q_s:\t\t' + str(DubinsAirplaneSolution['q_s']) + '\n')
+    print( 'w_si:\t\t' + str(DubinsAirplaneSolution['w_si'].T) + '\n')
+    print( 'q_si:\t\t' + str(DubinsAirplaneSolution['q_si'].T) + '\n')
+    print( 'w_l:\t\t' + str(DubinsAirplaneSolution['w_l']) + '\n')
+    print( 'q_l:\t\t' + str(DubinsAirplaneSolution['q_l']) + '\n')
+    print( 'w_ei:\t\t' + str(DubinsAirplaneSolution['w_ei'].T) + '\n')
+    print( 'q_ei:\t\t' + str(DubinsAirplaneSolution['q_ei'].T) + '\n')
+    print( 'w_e:\t\t' + str(DubinsAirplaneSolution['w_e']) + '\n')
+    print( 'q_e:\t\t' + str(DubinsAirplaneSolution['q_e']) + '\n')
+    print( 'angl_e:\t\t' + str(DubinsAirplaneSolution['angl_e']) + '\n')
 
-
-
-
-
-
-
-    
