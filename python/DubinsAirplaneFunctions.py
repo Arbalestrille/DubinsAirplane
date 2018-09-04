@@ -189,6 +189,9 @@ def MinTurnRadius_DubinsAirplane(V=None,phi_max=None):
     Rmin = pow( V,2 ) / (g * tan( phi_max ) )
     return Rmin
 
+# define a minimum error to prevent the algo from getting stuck
+epsilon = 0.0000000001
+
 def addSpiralBeginning(zs=None, anglstart=None, ze=None, anglend=None, R_min=None, gamma_max=None, idx=None, hdist=None):
     # Add Spiral in the Dubins Airplane Path beginning
     cli = np.zeros((3,1))
@@ -219,6 +222,10 @@ def addSpiralBeginning(zs=None, anglstart=None, ze=None, anglend=None, R_min=Non
             else:
                 psi1 = (179*psi1+psi)/180
 
+            if fabs(psi1 - psi2) < epsilon:
+                print( 'unable to minimize error futher -- going with what we got...' )
+                break
+
             psi = ( psi1 + psi2 ) / 2
 
         zi = crs + np.dot( rotz( psi ), ( zs-crs ) )
@@ -243,6 +250,10 @@ def addSpiralBeginning(zs=None, anglstart=None, ze=None, anglend=None, R_min=Non
                 psi2 = (179*psi2+psi)/180
             else:
                 psi1 = (179*psi1+psi)/180
+
+            if fabs(psi1 - psi2) < epsilon:
+                print( 'unable to minimize error futher -- going with what we got...' )
+                break
 
             psi = ( psi1 + psi2 ) / 2
 
@@ -269,6 +280,10 @@ def addSpiralBeginning(zs=None, anglstart=None, ze=None, anglend=None, R_min=Non
                 psi2 = (179*psi2+psi)/180
             else:
                 psi1 = (179*psi1+psi)/180
+
+            if fabs(psi1 - psi2) < epsilon:
+                print( 'unable to minimize error futher -- going with what we got...' )
+                break
 
             psi = ( psi1 + psi2 ) / 2
 
@@ -299,6 +314,10 @@ def addSpiralBeginning(zs=None, anglstart=None, ze=None, anglend=None, R_min=Non
                 psi2 = (179*psi2+psi)/180
             else:
                 psi1 = (179*psi1+psi)/180
+
+            if fabs(psi1 - psi2) < epsilon:
+                print( 'unable to minimize error futher -- going with what we got...' )
+                break
 
             psi = ( psi1 + psi2 ) / 2
 
@@ -342,6 +361,10 @@ def addSpiralEnd(zs=None, anglstart=None, ze=None, anglend=None, R_min=None, gam
             else:
                 psi1 = (179*psi1+psi)/180
 
+            if fabs(psi1 - psi2) < epsilon:
+                print( 'unable to minimize error futher -- going with what we got...' )
+                break
+
             psi = ( psi1 + psi2 ) / 2
 
         zi   = cre + np.dot( rotz( -psi ), ( ze-cre ) )
@@ -367,6 +390,10 @@ def addSpiralEnd(zs=None, anglstart=None, ze=None, anglend=None, R_min=None, gam
                 psi2 = (179*psi2+psi)/180
             else:
                 psi1 = (179*psi1+psi)/180
+
+            if fabs(psi1 - psi2) < epsilon:
+                print( 'unable to minimize error futher -- going with what we got...' )
+                break
 
             psi = ( psi1 + psi2 ) / 2
 
@@ -395,6 +422,10 @@ def addSpiralEnd(zs=None, anglstart=None, ze=None, anglend=None, R_min=None, gam
             else:
                 psi1 = (179*psi1+psi)/180
 
+            if fabs(psi1 - psi2) < epsilon:
+                print( 'unable to minimize error futher -- going with what we got...' )
+                break
+
             psi = ( psi1 + psi2 ) / 2
 
         zi   = cre + np.dot( rotz( -psi ), ( ze-cre ) )
@@ -421,6 +452,10 @@ def addSpiralEnd(zs=None, anglstart=None, ze=None, anglend=None, R_min=None, gam
                 psi2 = (179*psi2+psi)/180
             else:
                 psi1 = (179*psi1+psi)/180
+
+            if fabs(psi1 - psi2) < epsilon:
+                print( 'unable to minimize error futher -- going with what we got...' )
+                break
 
             psi = ( psi1 + psi2 ) / 2
 
